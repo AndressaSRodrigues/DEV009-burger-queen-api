@@ -1,10 +1,17 @@
+/* const { MongoClient } = require('mongodb');
 const config = require('./config');
 
-// eslint-disable-next-line no-unused-vars
 const { dbUrl } = config;
+const client = new MongoClient(dbUrl);
 
 async function connect() {
-  // TODO: Conexión a la Base de Datos
+  try {
+    await client.connect();
+    const db = client.db('bq');
+    return db;
+  } catch (error) {
+    console.log('Error connecting to the database', error);
+  }
 }
 
-module.exports = { connect };
+module.exports = { connect }; */

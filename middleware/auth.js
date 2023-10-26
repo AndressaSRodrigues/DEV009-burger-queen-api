@@ -18,18 +18,20 @@ module.exports = (secret) => (req, resp, next) => {
       return next(403);
     }
 
-    // TODO: Verificar identidad del usuario usando `decodeToken.uid`
+    if (!decodedToken.id) {
+      return next(403);
+    }
+
+    req.user = decodedToken;
   });
 };
 
 module.exports.isAuthenticated = (req) => (
-  // TODO: decidir por la informacion del request si la usuaria esta autenticada
-  false
+  !!req.user
 );
 
 module.exports.isAdmin = (req) => (
-  // TODO: decidir por la informacion del request si la usuaria es admin
-  false
+  req.user && req.user.role === 'admin'
 );
 
 module.exports.requireAuth = (req, resp, next) => (
@@ -39,7 +41,6 @@ module.exports.requireAuth = (req, resp, next) => (
 );
 
 module.exports.requireAdmin = (req, resp, next) => (
-  // eslint-disable-next-line no-nested-ternary
   (!module.exports.isAuthenticated(req))
     ? next(401)
     : (!module.exports.isAdmin(req))

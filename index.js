@@ -4,19 +4,18 @@ const authMiddleware = require('./middleware/auth');
 const errorHandler = require('./middleware/error');
 const routes = require('./routes');
 const pkg = require('./package.json');
+const mongoose =  require('mongoose');
 
-const { port, secret } = config;
+const { port, secret, dbUrl } = config;
 const app = express();
 
 app.set('config', config);
 app.set('pkg', pkg);
 
-// parse application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(authMiddleware(secret));
 
-// Registrar rutas
 routes(app, (err) => {
   if (err) {
     throw err;
@@ -28,3 +27,9 @@ routes(app, (err) => {
     console.info(`App listening on port ${port}`);
   });
 });
+
+const MONGO_URL = dbUrl;
+
+mongoose.Promise = Promise;
+mongoose.connect(MONGO_URL);
+mongoose.connection.on('error', () => console.log(error));
