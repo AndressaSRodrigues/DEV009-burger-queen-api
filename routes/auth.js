@@ -20,9 +20,14 @@ module.exports = (app, nextMain) => {
         return res.status(400).json({ err: 'User not found' });
     }
 
-    return res.json({ user });
+    const validatePassword = bcrypt.compareSync(password, user.password);
 
-    next();
+    if (!validatePassword) {
+      return res.status(400).json({ err: 'Invalid password' });
+    }
+
+    const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, secret);
+    return res.json({ accessToken: token, user });
   });
 
   return nextMain();
