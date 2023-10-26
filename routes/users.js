@@ -49,7 +49,6 @@ module.exports = (app, next) => {
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
-  
 
   app.get('/users/:uid', requireAuth, (req, resp) => {
   });
