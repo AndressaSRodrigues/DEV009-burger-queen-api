@@ -3,7 +3,6 @@ const { UserSchema } = require('../models/users');
 
 const User = mongoose.model('User', UserSchema);
 
-  
 async function getUsers () {
   return await User.find({});
 }
@@ -36,4 +35,4 @@ module.exports = {
   createUser,
   deleteUserById,
   updateUserById
-}
+};
