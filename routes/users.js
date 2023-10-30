@@ -42,26 +42,41 @@ const initAdminUser = async (app, next) => {
 module.exports = (app, next) => {
 
   app.get('/users', requireAdmin, async (req, res) => {
+    const users = await getUsers();
+    console.log(users);
+    return res.json(users);
+  });
+
+  app.get('/users/:uid', requireAuth, (req, res) => {
+  });
+
+  app.post('/users', requireAdmin, async (req, res) => {
+    const { email, password, role } = req.body;
+  
+    if (!email || !password || !role) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+  
+    const user = new User({
+      email,
+      password,
+      role,
+    });
+  
     try {
-      const users = await getUsers();
-      res.status(200).json(users);
+      const newUser = await createUser(user);
+      console.log(newUser)
+      return res.status(201).json(newUser);
     } catch (error) {
-      res.status(500).json({ error: 'Internal Server Error' });
+      console.log(error);
+      return res.status(500).json({ message: 'User creation failed' });
     }
   });
-
-  app.get('/users/:uid', requireAuth, (req, resp) => {
+  
+  app.put('/users/:uid', requireAuth, (req, res, next) => {
   });
 
-  app.post('/users', requireAdmin, (req, resp, next) => {
-    // TODO: implementar la ruta para agregar
-    // nuevos usuarios
-  });
-
-  app.put('/users/:uid', requireAuth, (req, resp, next) => {
-  });
-
-  app.delete('/users/:uid', requireAuth, (req, resp, next) => {
+  app.delete('/users/:uid', requireAuth, (req, res, next) => {
   });
 
   initAdminUser(app, next);
