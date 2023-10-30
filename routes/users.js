@@ -11,11 +11,12 @@ const {
   getUserByEmail,
   createUser,
   getUserById,
+  deleteUserById,
 } = require('../controller/users');
 
 const initAdminUser = async (app, next) => {
   const { adminEmail, adminPassword } = app.get('config');
-  
+
   if (!adminEmail || !adminPassword) {
     return next();
   }
@@ -23,7 +24,7 @@ const initAdminUser = async (app, next) => {
   try {
     const existingAdminUser = await getUserByEmail(adminEmail);
 
-    if(!existingAdminUser){
+    if (!existingAdminUser) {
       const adminUser = new User({
         email: adminEmail,
         password: bcrypt.hashSync(adminPassword, 10),
@@ -56,17 +57,17 @@ module.exports = (app, next) => {
 
   app.post('/users', requireAdmin, async (req, res) => {
     const { email, password, role } = req.body;
-  
+
     if (!email || !password || !role) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
-  
+
     const user = new User({
       email,
       password,
       role,
     });
-  
+
     try {
       const newUser = await createUser(user);
       console.log(newUser)
@@ -76,11 +77,16 @@ module.exports = (app, next) => {
       return res.status(500).json({ message: 'User creation failed' });
     }
   });
-  
-  app.put('/users/:uid', requireAuth, (req, res, next) => {
+
+  app.put('/users/:uid', requireAuth, (req, res) => {
+
+
   });
 
-  app.delete('/users/:uid', requireAuth, (req, res, next) => {
+  app.delete('/users/:uid', requireAuth, async (req, res) => {
+    const uid = req.params.uid;
+    const deleted = deleteUserById(uid)
+    return res.status(200).json(deleted)
   });
 
   initAdminUser(app, next);
