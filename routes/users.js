@@ -12,6 +12,7 @@ const {
   createUser,
   getUserById,
   deleteUserById,
+  updateUserById,
 } = require('../controller/users');
 
 const initAdminUser = async (app, next) => {
@@ -44,15 +45,22 @@ const initAdminUser = async (app, next) => {
 module.exports = (app, next) => {
 
   app.get('/users', requireAdmin, async (req, res) => {
-    const users = await getUsers();
-    console.log(users);
-    return res.json(users);
+    try {
+      const users = await getUsers();
+      return res.json(users);
+    } catch (error) {
+      return res.status(500).json({ message: 'User update failed' });
+    }
   });
 
   app.get('/users/:uid', requireAuth, async (req, res) => {
-    const uid = req.params.uid;
-    const user = await getUserById(uid);
-    return res.json(user);
+    try {
+      const uid = req.params.uid;
+      const user = await getUserById(uid);
+      return res.json(user);
+    } catch (error) {
+      return res.status(500).json({ message: 'User update failed' });
+    }
   });
 
   app.post('/users', requireAdmin, async (req, res) => {
@@ -70,23 +78,37 @@ module.exports = (app, next) => {
 
     try {
       const newUser = await createUser(user);
-      console.log(newUser)
       return res.status(201).json(newUser);
     } catch (error) {
-      console.log(error);
       return res.status(500).json({ message: 'User creation failed' });
     }
   });
 
-  app.put('/users/:uid', requireAuth, (req, res) => {
+  app.patch('/users/:uid', requireAuth, async (req, res) => {
+    try {
+      const uid = req.params.uid;
+      const values = req.body;
 
+      const updatedUser = await updateUserById(uid, values);
 
+      if (!updatedUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      return res.status(200).json(updatedUser);
+    } catch (error) {
+      return res.status(500).json({ message: 'User update failed' });
+    }
   });
 
   app.delete('/users/:uid', requireAuth, async (req, res) => {
-    const uid = req.params.uid;
-    const deleted = deleteUserById(uid)
-    return res.status(200).json(deleted)
+    try {
+      const uid = req.params.uid;
+      const deleted = deleteUserById(uid);
+      return res.status(200).json(deleted);
+    } catch (error) {
+      return res.status(500).json({ message: 'User delete failed' });
+    }
   });
 
   initAdminUser(app, next);
