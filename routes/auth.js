@@ -23,6 +23,7 @@ module.exports = (app, nextMain) => {
     const validatePassword = bcrypt.compareSync(password, user.password);
 
     if (!validatePassword) {
+      console.log(user.password)
       return res.status(400).json({ err: 'Invalid password' });
     }
 
