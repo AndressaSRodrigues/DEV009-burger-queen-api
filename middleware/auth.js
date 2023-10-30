@@ -23,27 +23,29 @@ module.exports = (secret) => (req, resp, next) => {
     }
 
     req.user = decodedToken;
+
+    next();
   });
 };
 
-module.exports.isAuthenticated = (req) => (
-  !!req.user
-);
+module.exports.isAuthenticated = (req) => {
+  return req.user ? true : false;
+};
 
-module.exports.isAdmin = (req) => (
-  req.user && req.user.role === 'admin'
-);
+module.exports.isAdmin = (req) => {
+  return req.user && req.user.role === 'admin';
+}
 
-module.exports.requireAuth = (req, resp, next) => (
+module.exports.requireAuth = (req, resp, next) => {
   (!module.exports.isAuthenticated(req))
     ? next(401)
     : next()
-);
+};
 
-module.exports.requireAdmin = (req, resp, next) => (
+module.exports.requireAdmin = (req, resp, next) => {
   (!module.exports.isAuthenticated(req))
     ? next(401)
     : (!module.exports.isAdmin(req))
       ? next(403)
       : next()
-);
+};
