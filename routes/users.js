@@ -72,7 +72,7 @@ module.exports = (app, next) => {
 
     const user = new User({
       email,
-      password,
+      password: bcrypt.hashSync(password, 10),
       role,
     });
 
