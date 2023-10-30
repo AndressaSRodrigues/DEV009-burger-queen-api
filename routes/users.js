@@ -9,7 +9,8 @@ const {
   User,
   getUsers,
   getUserByEmail,
-  createUser
+  createUser,
+  getUserById,
 } = require('../controller/users');
 
 const initAdminUser = async (app, next) => {
@@ -47,7 +48,10 @@ module.exports = (app, next) => {
     return res.json(users);
   });
 
-  app.get('/users/:uid', requireAuth, (req, res) => {
+  app.get('/users/:uid', requireAuth, async (req, res) => {
+    const uid = req.params.uid;
+    const user = await getUserById(uid);
+    return res.json(user);
   });
 
   app.post('/users', requireAdmin, async (req, res) => {
