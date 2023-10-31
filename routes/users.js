@@ -44,72 +44,15 @@ const initAdminUser = async (app, next) => {
 
 module.exports = (app, next) => {
 
-  app.get('/users', requireAdmin, async (req, res) => {
-    try {
-      const users = await getUsers();
-      return res.json(users);
-    } catch (error) {
-      return res.status(500).json({ message: 'User update failed' });
-    }
-  });
+  app.get('/users', requireAdmin, getUsers);
 
-  app.get('/users/:uid', requireAuth, async (req, res) => {
-    try {
-      const uid = req.params.uid;
-      const user = await getUserById(uid);
-      return res.json(user);
-    } catch (error) {
-      return res.status(500).json({ message: 'User update failed' });
-    }
-  });
+  app.get('/users/:uid', requireAuth, getUserById);
 
-  app.post('/users', requireAdmin, async (req, res) => {
-    const { email, password, role } = req.body;
+  app.post('/users', requireAdmin, createUser);
 
-    if (!email || !password || !role) {
-      return res.status(400).json({ message: 'Missing required fields' });
-    }
+  app.patch('/users/:uid', requireAuth, updateUserById);
 
-    const user = new User({
-      email,
-      password: bcrypt.hashSync(password, 10),
-      role,
-    });
-
-    try {
-      const newUser = await createUser(user);
-      return res.status(201).json(newUser);
-    } catch (error) {
-      return res.status(500).json({ message: 'User creation failed' });
-    }
-  });
-
-  app.patch('/users/:uid', requireAuth, async (req, res) => {
-    try {
-      const uid = req.params.uid;
-      const values = req.body;
-
-      const updatedUser = await updateUserById(uid, values);
-
-      if (!updatedUser) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-
-      return res.status(200).json(updatedUser);
-    } catch (error) {
-      return res.status(500).json({ message: 'User update failed' });
-    }
-  });
-
-  app.delete('/users/:uid', requireAuth, async (req, res) => {
-    try {
-      const uid = req.params.uid;
-      const deleted = deleteUserById(uid);
-      return res.status(200).json(deleted);
-    } catch (error) {
-      return res.status(500).json({ message: 'User delete failed' });
-    }
-  });
+  app.delete('/users/:uid', requireAuth, deleteUserById);
 
   initAdminUser(app, next);
 };

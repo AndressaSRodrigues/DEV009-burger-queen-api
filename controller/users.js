@@ -1,38 +1,95 @@
-const mongoose = require('mongoose');
-const { UserSchema } = require('../models/users');
+const bcrypt = require('bcrypt');
 
-const User = mongoose.model('User', UserSchema);
+const {
+  User,
+  find,
+  findByEmail,
+  findById,
+  create,
+  deleteById,
+  updateById
+} = require('../models/users');
 
-async function getUsers () {
-  return await User.find({});
-}
+const getUsers = async (req, res) => {
+  try {
+    const users = await find();
+    return res.json(users);
+  } catch {
+    return res.status(500).json({ message: 'Users not found' });
+  }
+};
 
-async function getUserByEmail(email) {
-  return await User.findOne({ email });
-}
+const getUserByEmail = async (email) => {
+  try {
+    return await findByEmail(email);
+  } catch {
+    return res.status(500).json({ message: 'User not found' });
+  }
+};
 
-async function getUserById(id) {
-  return await User.findById(id);
-}
+const createUser = async (req, res) => {
+  const { email, password, role } = req.body;
 
-async function createUser(user) {
-  return await User.create(user);
-}
+  if (!email || !password || !role) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
 
-async function deleteUserById(id){
-  return await User.findOneAndDelete({ _id: id });
-}
+  const user = new User({
+    email,
+    password: bcrypt.hashSync(password, 10),
+    role,
+  });
 
-async function updateUserById(id, values){
-  return await User.findByIdAndUpdate(id, values, { new: true, runValidators: true }); //para traer la info actualizada
-}
+  try {
+    const newUser = await create(user);
+    return res.status(201).json(newUser);
+  } catch (error) {
+    return res.status(500).json({ message: 'User creation failed' });
+  }
+};
+
+const getUserById = async (req, res) => {
+  try {
+    const uid = req.params.uid;
+    const user = await findById(uid);
+    return res.json(user);
+  } catch (error) {
+    return res.status(500).json({ message: 'User update failed' });
+  }
+};
+
+const updateUserById = async (req, res) => {
+  try {
+    const uid = req.params.uid;
+    const values = req.body;
+
+    const updatedUser = await updateById(uid, values);
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.status(200).json(updatedUser);
+  } catch (error) {
+    return res.status(500).json({ message: 'User update failed' });
+  }
+};
+
+const deleteUserById = async (req, res) => {
+  try {
+    const uid = req.params.uid;
+    const deleted = deleteById(uid);
+    return res.status(200).json(deleted);
+  } catch (error) {
+    return res.status(500).json({ message: 'User delete failed' });
+  }
+};
 
 module.exports = {
-  User,
   getUsers,
   getUserByEmail,
-  getUserById,
   createUser,
-  deleteUserById,
-  updateUserById
-};
+  getUserById,
+  updateUserById,
+  deleteUserById
+}
