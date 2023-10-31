@@ -63,6 +63,10 @@ const updateUserById = async (req, res) => {
     const uid = req.params.uid;
     const values = req.body;
 
+    if (values.password) {
+      values.password = bcrypt.hashSync(values.password, 10);
+    }
+
     const updatedUser = await updateById(uid, values);
 
     if (!updatedUser) {
