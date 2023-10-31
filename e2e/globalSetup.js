@@ -1,7 +1,6 @@
 const path = require('path');
 const { spawn } = require('child_process');
 const kill = require('tree-kill');
-const { MongoClient } = require('mongodb');
 
 const mongoGlobalSetup = require("@shelf/jest-mongodb/lib/setup");
 
@@ -21,6 +20,7 @@ const __e2e = {
   testUserCredentials: {
     email: 'test@test.test',
     password: '123456',
+    role: 'waiter',
   },
   testUserToken: null,
   childProcessPid: null,
@@ -60,10 +60,11 @@ const createTestUser = () => fetchAsAdmin('/users', {
   body: __e2e.testUserCredentials,
 })
   .then((resp) => {
-    if (resp.status !== 200) {
+    if (resp.status !== 201) {
       throw new Error(`Error: Could not create test user - response ${resp.status}`);
     }
-    return fetch('/auth', { method: 'POST', body: __e2e.testUserCredentials });
+
+    return fetch('/login', { method: 'POST', body: __e2e.testUserCredentials });
   })
   .then((resp) => {
     if (resp.status !== 200) {
@@ -71,9 +72,11 @@ const createTestUser = () => fetchAsAdmin('/users', {
     }
     return resp.json();
   })
-  .then(({ token }) => Object.assign(__e2e, { testUserToken: token }));
+  .then((data) => {
+    Object.assign(__e2e, { testUserToken: data.accessToken });
+  });
 
-const checkAdminCredentials = () => fetch('/auth', {
+const checkAdminCredentials = () => fetch('/login', {
   method: 'POST',
   body: __e2e.adminUserCredentials,
 })
@@ -84,7 +87,9 @@ const checkAdminCredentials = () => fetch('/auth', {
 
     return resp.json();
   })
-  .then(({ token }) => Object.assign(__e2e, { adminToken: token }));
+  .then((json) => {
+    Object.assign(__e2e, { adminToken: json.accessToken });
+  });
 
 const waitForServerToBeReady = (retries = 10) => new Promise((resolve, reject) => {
   if (!retries) {
@@ -108,7 +113,7 @@ module.exports = () => new Promise((resolve, reject) => {
     return resolve();
   }
 
-  mongoGlobalSetup({rootDir: __dirname}).then(async () => {
+  mongoGlobalSetup({ rootDir: __dirname }).then(async () => {
 
     console.info('\n Starting local server...');
 
@@ -148,7 +153,7 @@ module.exports = () => new Promise((resolve, reject) => {
         console.log('there was an error');
         kill(child.pid, 'SIGKILL', () => reject(err));
       })
-    }).catch((error)=> console.log(error));
+  }).catch((error) => console.log(error));
 });
 
 // Export globals - ugly... :-(
