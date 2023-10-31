@@ -24,7 +24,7 @@ async function deleteUserById(id){
 }
 
 async function updateUserById(id, values){
-  return await User.findByIdAndUpdate(id, values);
+  return await User.findByIdAndUpdate(id, values, { new: true, runValidators: true }); //para traer la info actualizada
 }
 
 module.exports = {
