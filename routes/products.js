@@ -8,11 +8,10 @@ const {
   createProducts,
   getProductById,
   deleteProductById,
-  updateProductById
+  updateProductById,
 } = require('../controller/products');
 
 module.exports = (app, nextMain) => {
-
   app.get('/products', requireAuth, getProducts);
 
   app.get('/products/:productId', requireAuth, getProductById);

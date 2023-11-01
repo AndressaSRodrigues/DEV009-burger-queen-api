@@ -1,12 +1,11 @@
 const jwt = require('jsonwebtoken');
-const bcrypt =  require('bcrypt');
+const bcrypt = require('bcrypt');
 const config = require('../config');
-const { getUserByEmail } = require('../controller/users')
+const { getUserByEmail } = require('../controller/users');
 
 const { secret } = config;
 
 module.exports = (app, nextMain) => {
-
   app.post('/login', async (req, res, next) => {
     const { email, password } = req.body;
 
@@ -17,13 +16,12 @@ module.exports = (app, nextMain) => {
     const user = await getUserByEmail(email);
 
     if (!user) {
-        return res.status(400).json({ err: 'User not found' });
+      return res.status(400).json({ err: 'User not found' });
     }
 
     const validatePassword = bcrypt.compareSync(password, user.password);
 
     if (!validatePassword) {
-      console.log(user.password)
       return res.status(400).json({ err: 'Invalid password' });
     }
 

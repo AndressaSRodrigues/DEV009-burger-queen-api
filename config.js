@@ -11,6 +11,6 @@ Add-Type -AssemblyName System.Security
 >> $randomBytes = New-Object byte[] 32
 >> [Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($randomBytes)
 >> $secretKey = [BitConverter]::ToString($randomBytes) -replace '-'
->> 
+>>
 >> $secretKey
 */

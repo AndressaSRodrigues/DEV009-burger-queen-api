@@ -7,22 +7,22 @@ const {
   findById,
   create,
   deleteById,
-  updateById
+  updateById,
 } = require('../models/users');
 
 const getUsers = async (req, res) => {
   try {
     const users = await find();
     return res.json(users);
-  } catch {
+  } catch (error) {
     return res.status(500).json({ message: 'Users not found' });
   }
 };
 
-const getUserByEmail = async (email) => {
+const getUserByEmail = async (email, res) => {
   try {
     return await findByEmail(email);
-  } catch {
+  } catch (error) {
     return res.status(500).json({ message: 'User not found' });
   }
 };
@@ -50,7 +50,7 @@ const createUser = async (req, res) => {
 
 const getUserById = async (req, res) => {
   try {
-    const uid = req.params.uid;
+    const { uid } = req.params;
     const user = await findById(uid);
     return res.json(user);
   } catch (error) {
@@ -60,7 +60,7 @@ const getUserById = async (req, res) => {
 
 const updateUserById = async (req, res) => {
   try {
-    const uid = req.params.uid;
+    const { uid } = req.params;
     const values = req.body;
 
     if (values.password) {
@@ -81,7 +81,7 @@ const updateUserById = async (req, res) => {
 
 const deleteUserById = async (req, res) => {
   try {
-    const uid = req.params.uid;
+    const { uid } = req.params;
     await deleteById(uid);
     return res.status(200).json({ message: 'User deleted.' });
   } catch (error) {
@@ -95,5 +95,5 @@ module.exports = {
   createUser,
   getUserById,
   updateUserById,
-  deleteUserById
+  deleteUserById,
 };
