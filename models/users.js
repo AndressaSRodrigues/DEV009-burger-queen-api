@@ -8,7 +8,7 @@ const UserSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', UserSchema);
 
-async function find () {
+async function find() {
   return await User.find({});
 };
 
@@ -29,7 +29,7 @@ async function deleteById(id){
 };
 
 async function updateById(id, values){
-  return await User.findByIdAndUpdate(id, values, { new: true, runValidators: true });
+  return await User.findByIdAndUpdate(id, values, { new: true });
 };
 
 module.exports = {

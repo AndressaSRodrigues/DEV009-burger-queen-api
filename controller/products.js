@@ -1,33 +1,84 @@
-const mongoose = require('mongoose');
-const { ProductSchema } = require('../models/products');
+const {
+    Product,
+    findProducts,
+    findById,
+    create,
+    deleteById,
+    updateById
+} = require('../models/products');
 
-const Product = mongoose.model('Product', ProductSchema);
+const getProducts = async (req, res) => {
+    try {
+        const products = await findProducts();
+        return res.json(products);
+    } catch {
+        return res.status(500).json({ message: 'Products not found' });
+    }
+};
 
-async function getProducts() {
-    return await Product.find({});
-}
+const getProductById = async (req, res) => {
+    try {
+        const productId = req.params.productId;
+        const product = await findById(productId);
+        return res.json(product);
+    } catch (error) {
+        return res.status(500).json({ message: 'Could not find product.' });
+    }
+};
 
-async function getProductById(id) {
-    return await Product.findById(id);
-}
+const createProducts = async (req, res) => {
+    const { name, price, image, type } = req.body;
 
-async function createProduct(product) {
-    return await Product.create(product);
-}
+    if (!name || !price || !type) {
+        return res.status(400).json({ message: 'Missing required fields' });
+    };
 
-async function deleteProductById(id) {
-    return await Product.findOneAndDelete({ _id: id });
-}
+    const product = new Product({
+        name,
+        price,
+        image,
+        type
+    });
 
-async function updateProductById(id, values) {
-    return await Product.findByIdAndUpdate(id, values);
-}
+    try {
+        const newProduct = await create(product);
+        return res.status(201).json(newProduct);
+    } catch (error) {
+        return res.status(500).json({ message: 'Product creation failed' });
+    }
+};
+
+const updateProductById = async (req, res) => {
+    try {
+        const productId = req.params.productId;
+        const values = req.body;
+    
+        const updatedProduct = await updateById(productId, values);
+    
+        if (!updatedProduct) {
+          return res.status(404).json({ message: 'Product not found.' });
+        }
+    
+        return res.status(200).json(updatedProduct);
+    } catch (error) {
+        return res.status(500).json({ message: 'Product update failed.' });
+    }
+};
+
+const deleteProductById = async (req, res) => {
+    try {
+        const productId = req.params.productId;
+        await deleteById(productId);
+        return res.status(200).json({ message: 'Product deleted.'});
+    } catch (error) {
+        return res.status(500).json({ message: 'Product delete failed.' });
+    }
+};
 
 module.exports = {
-    Product,
     getProducts,
     getProductById,
-    createProduct,
-    deleteProductById,
-    updateProductById
+    createProducts,
+    updateProductById,
+    deleteProductById
 };

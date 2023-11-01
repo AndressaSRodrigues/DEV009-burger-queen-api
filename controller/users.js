@@ -44,7 +44,7 @@ const createUser = async (req, res) => {
     const newUser = await create(user);
     return res.status(201).json(newUser);
   } catch (error) {
-    return res.status(500).json({ message: 'User creation failed' });
+    return res.status(500).json({ message: 'User creation failed.' });
   }
 };
 
@@ -54,7 +54,7 @@ const getUserById = async (req, res) => {
     const user = await findById(uid);
     return res.json(user);
   } catch (error) {
-    return res.status(500).json({ message: 'User update failed' });
+    return res.status(500).json({ message: 'Could not find user.' });
   }
 };
 
@@ -70,22 +70,22 @@ const updateUserById = async (req, res) => {
     const updatedUser = await updateById(uid, values);
 
     if (!updatedUser) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'User not found.' });
     }
 
     return res.status(200).json(updatedUser);
   } catch (error) {
-    return res.status(500).json({ message: 'User update failed' });
+    return res.status(500).json({ message: 'User update failed.' });
   }
 };
 
 const deleteUserById = async (req, res) => {
   try {
     const uid = req.params.uid;
-    const deleted = deleteById(uid);
-    return res.status(200).json(deleted);
+    await deleteById(uid);
+    return res.status(200).json({ message: 'User deleted.' });
   } catch (error) {
-    return res.status(500).json({ message: 'User delete failed' });
+    return res.status(500).json({ message: 'User delete failed.' });
   }
 };
 
@@ -96,4 +96,4 @@ module.exports = {
   getUserById,
   updateUserById,
   deleteUserById
-}
+};
