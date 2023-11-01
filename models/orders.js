@@ -11,10 +11,9 @@ const ProductOrderSchema = new mongoose.Schema({
 });
 
 const OrderSchema = new mongoose.Schema({
-    _id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     client: { type: String, required: true },
     products: { type: [ProductOrderSchema], required: true },
-    status: { type: String, enum: ['pending', 'in progress', 'ready', 'delivered']},
+    status: { type: String, enum: ['pending', 'in progress', 'ready', 'delivered'], default: 'pending'},
     dateEntry: { type: Date, default: Date.now },
     dateProcessed: { type: Date }
 });
