@@ -16,7 +16,7 @@ const {
 } = require('../controller/users');
 
 const initAdminUser = async (app, next) => {
-  const { adminEmail, adminPassword } = app.get('config');
+  const { adminName, adminEmail, adminPassword } = app.get('config');
 
   if (!adminEmail || !adminPassword) {
     return next();
@@ -27,6 +27,7 @@ const initAdminUser = async (app, next) => {
 
     if (!existingAdminUser) {
       const adminUser = new User({
+        name: adminName,
         email: adminEmail,
         password: bcrypt.hashSync(adminPassword, 10),
         role: 'admin',
