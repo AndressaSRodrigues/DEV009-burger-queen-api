@@ -5,6 +5,7 @@ const errorHandler = require('./middleware/error');
 const routes = require('./routes');
 const pkg = require('./package.json');
 const mongoose =  require('mongoose');
+const cors = require('cors');
 
 const { port, secret, dbUrl } = config;
 const app = express();
@@ -14,6 +15,7 @@ app.set('pkg', pkg);
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+app.use(cors());
 app.use(authMiddleware(secret));
 
 routes(app, (err) => {
