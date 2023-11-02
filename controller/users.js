@@ -32,7 +32,7 @@ const createUser = async (req, res) => {
 
   if (!email || !password || !role) {
     return res.status(400).json({ message: 'Missing required fields' });
-  };
+  }
 
   const user = new User({
     email,
