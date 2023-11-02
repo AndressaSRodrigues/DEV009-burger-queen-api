@@ -40,18 +40,13 @@ To use the Burger Queen API, you can follow the API endpoints described in the n
 To use the Burger Queen API with Postman, follow these steps:
 
 1. **Obtain an Access Token**:
-   - Start by sending a `POST` request to the `/login` endpoint to obtain an access token. Provide your admin credentials (username and password) in the request body. Upon a successful login, the API will respond with an access token.
+   - Start by sending a `POST` request to the `/login` endpoint to obtain an access token. Provide your credentials (username and password) in the request body. Upon a successful login, the API will respond with an access token.
 
    You can use these credentials to log in:
-   - As admin:
-    email: admin@bq.com
-    password: 123456
    - As waiter:
-    email: waiter@bq.com
-    password: 123456
+    email: waiter@bq.com, password: 123456
    - As chef:
-    email: chef@bq.com
-    password: 123456
+    email: chef@bq.com, password: 123456
 
 2. **Set Authorization Header**:
    - Copy the access token received in the previous step.
@@ -64,7 +59,6 @@ To use the Burger Queen API with Postman, follow these steps:
      - `POST`: Create a new user (Admin only).
      - `PATCH`: Update user information (Admin only).
      - `DELETE`: Delete a user (Admin only).
-   - Ensure you have the appropriate permissions as an admin.
 
 4. **Accessing Product-Related Endpoints**:
    - For product-related endpoints (e.g., `/products`, `/products/:productid`), you can use the following HTTP methods:
@@ -72,7 +66,6 @@ To use the Burger Queen API with Postman, follow these steps:
      - `POST`: Add a new product (Admin only).
      - `PATCH`: Update product information (Admin only).
      - `DELETE`: Delete a product (Admin only).
-   - Make sure you have the necessary permissions.
 
 5. **Accessing Order-Related Endpoints**:
    - For order-related endpoints (e.g., `/orders`, `/orders/:orderId`), you can use the following HTTP methods:
@@ -80,7 +73,6 @@ To use the Burger Queen API with Postman, follow these steps:
      - `POST`: Place a new order.
      - `PATCH`: Update order status.
      - `DELETE`: Delete an order.
-   - Make sure you have the necessary permissions.
 
 6. **Send Requests**:
    - In Postman, create a new request for the desired endpoint and set the HTTP method accordingly.
