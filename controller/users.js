@@ -28,13 +28,14 @@ const getUserByEmail = async (email, res) => {
 };
 
 const createUser = async (req, res) => {
-  const { email, password, role } = req.body;
+  const { name, email, password, role } = req.body;
 
-  if (!email || !password || !role) {
+  if (!name || !email || !password || !role) {
     return res.status(400).json({ message: 'Missing required fields' });
-  }
+  };
 
   const user = new User({
+    name,
     email,
     password: bcrypt.hashSync(password, 10),
     role,
