@@ -1,9 +1,9 @@
-const { 
+const {
   getOrders,
-  getOrderById, 
+  getOrderById,
   createOrder,
   updateOrderById,
-  deleteOrderById
+  deleteOrderById,
 } = require('../controller/orders');
 
 const {
@@ -11,7 +11,6 @@ const {
 } = require('../middleware/auth');
 
 module.exports = (app, nextMain) => {
-
   app.get('/orders', requireAuth, getOrders);
 
   app.get('/orders/:orderId', requireAuth, getOrderById);

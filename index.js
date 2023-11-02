@@ -1,11 +1,11 @@
 const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
 const config = require('./config');
 const authMiddleware = require('./middleware/auth');
 const errorHandler = require('./middleware/error');
 const routes = require('./routes');
 const pkg = require('./package.json');
-const mongoose =  require('mongoose');
-const cors = require('cors');
 
 const { port, secret, dbUrl } = config;
 const app = express();
@@ -34,4 +34,4 @@ const MONGO_URL = dbUrl;
 
 mongoose.Promise = Promise;
 mongoose.connect(MONGO_URL);
-mongoose.connection.on('error', () => console.log(error));
+mongoose.connection.on('error', (error) => console.error(error));

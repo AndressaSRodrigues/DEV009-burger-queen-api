@@ -6,7 +6,6 @@ const {
 } = require('../middleware/auth');
 
 const {
-  User,
   getUsers,
   getUserByEmail,
   createUser,
@@ -15,36 +14,30 @@ const {
   updateUserById,
 } = require('../controller/users');
 
+const { User } = require('../models/users');
+
 const initAdminUser = async (app, next) => {
-  const { adminName, adminEmail, adminPassword } = app.get('config');
+  const { adminEmail, adminPassword } = app.get('config');
 
   if (!adminEmail || !adminPassword) {
     return next();
   }
 
-  try {
-    const existingAdminUser = await getUserByEmail(adminEmail);
+  const existingAdminUser = await getUserByEmail(adminEmail);
+  if (!existingAdminUser) {
+    const adminUser = new User({
+      email: adminEmail,
+      password: bcrypt.hashSync(adminPassword, 10),
+      role: 'admin',
+    });
 
-    if (!existingAdminUser) {
-      const adminUser = new User({
-        name: adminName,
-        email: adminEmail,
-        password: bcrypt.hashSync(adminPassword, 10),
-        role: 'admin',
-      });
-
-      await createUser(adminUser);
-    }
-
-  } catch (error) {
-    console.log(error);
+    await createUser(adminUser);
   }
 
   next();
 };
 
 module.exports = (app, next) => {
-
   app.get('/users', requireAdmin, getUsers);
 
   app.get('/users/:uid', requireAuth, getUserById);
