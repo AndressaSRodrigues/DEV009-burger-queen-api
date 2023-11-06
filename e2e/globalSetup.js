@@ -1,6 +1,7 @@
 const path = require('path');
 const { spawn } = require('child_process');
 const kill = require('tree-kill');
+require("dotenv").config();
 
 const mongoGlobalSetup = require("@shelf/jest-mongodb/lib/setup");
 

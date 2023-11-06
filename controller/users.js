@@ -15,7 +15,7 @@ const getUsers = async (req, res) => {
     const users = await find();
     return res.json(users);
   } catch (error) {
-    return res.status(500).json({ message: 'Users not found' });
+    return res.status(500).json({ message: 'Users not found.' });
   }
 };
 
@@ -23,7 +23,7 @@ const getUserByEmail = async (email, res) => {
   try {
     return await findByEmail(email);
   } catch (error) {
-    return res.status(500).json({ message: 'User not found' });
+    return res.status(500).json({ message: 'User not found.' });
   }
 };
 
@@ -31,7 +31,7 @@ const createUser = async (req, res) => {
   const { email, password, role } = req.body;
 
   if (!email || !password || !role) {
-    return res.status(400).json({ message: 'Missing required fields' });
+    return res.status(400).json({ message: 'Missing required fields.' });
   }
 
   const user = new User({
@@ -44,7 +44,7 @@ const createUser = async (req, res) => {
     const newUser = await create(user);
     return res.status(201).json(newUser);
   } catch (error) {
-    return res.status(500).json({ message: 'User creation failed.' });
+    return res.status(500).json({ message: 'Failed to create new user.' });
   }
 };
 
@@ -54,7 +54,7 @@ const getUserById = async (req, res) => {
     const user = await findById(uid);
     return res.json(user);
   } catch (error) {
-    return res.status(500).json({ message: 'Could not find user.' });
+    return res.status(500).json({ message: 'User not found.' });
   }
 };
 
@@ -75,7 +75,7 @@ const updateUserById = async (req, res) => {
 
     return res.status(200).json(updatedUser);
   } catch (error) {
-    return res.status(500).json({ message: 'User update failed.' });
+    return res.status(500).json({ message: 'Failed to update user.' });
   }
 };
 
@@ -85,7 +85,7 @@ const deleteUserById = async (req, res) => {
     await deleteById(uid);
     return res.status(200).json({ message: 'User deleted.' });
   } catch (error) {
-    return res.status(500).json({ message: 'User delete failed.' });
+    return res.status(500).json({ message: 'Failed to delete user.' });
   }
 };
 

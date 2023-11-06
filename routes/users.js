@@ -23,15 +23,20 @@ const initAdminUser = async (app, next) => {
     return next();
   }
 
-  const existingAdminUser = await getUserByEmail(adminEmail);
-  if (!existingAdminUser) {
-    const adminUser = new User({
-      email: adminEmail,
-      password: bcrypt.hashSync(adminPassword, 10),
-      role: 'admin',
-    });
+  try {
+    const existingAdminUser = await getUserByEmail(adminEmail);
 
-    await createUser(adminUser);
+    if (!existingAdminUser) {
+      const adminUser = new User({
+        email: adminEmail,
+        password: bcrypt.hashSync(adminPassword, 10),
+        role: 'admin',
+      });
+
+      await createUser(adminUser);
+    }
+  } catch (error) {
+    console.error(error);
   }
 
   next();
