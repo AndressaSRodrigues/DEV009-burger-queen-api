@@ -1,6 +1,7 @@
 const path = require('path');
 const { spawn } = require('child_process');
 const kill = require('tree-kill');
+const bcrypt =  require('bcrypt');
 require("dotenv").config();
 
 const mongoGlobalSetup = require("@shelf/jest-mongodb/lib/setup");
@@ -16,19 +17,16 @@ const __e2e = {
   adminUserCredentials: {
     email: config.adminEmail,
     password: config.adminPassword,
+    role: 'admin',
   },
   adminToken: null,
   testUserCredentials: {
-    email: 'test@test.test',
+    email: 'test@test.com',
     password: '123456',
     role: 'waiter',
   },
   testUserToken: null,
   childProcessPid: null,
-  // in `testObjects` we keep track of objects created during the test run so
-  // that we can clean up before exiting.
-  // For example: ['users/foo@bar.baz', 'products/xxx', 'orders/yyy']
-  // testObjects: [],
 };
 
 const fetch = (url, opts = {}) => import('node-fetch')
@@ -85,11 +83,10 @@ const checkAdminCredentials = () => fetch('/login', {
     if (resp.status !== 200) {
       throw new Error(`Error: Could not authenticate as admin user - response ${resp.status}`);
     }
-
     return resp.json();
   })
-  .then((json) => {
-    Object.assign(__e2e, { adminToken: json.accessToken });
+  .then((data) => {
+    Object.assign(__e2e, { adminToken: data.accessToken });
   });
 
 const waitForServerToBeReady = (retries = 10) => new Promise((resolve, reject) => {
@@ -151,7 +148,6 @@ module.exports = () => new Promise((resolve, reject) => {
       .then(createTestUser)
       .then(resolve)
       .catch((err) => {
-        console.log('there was an error');
         kill(child.pid, 'SIGKILL', () => reject(err));
       })
   }).catch((error) => console.log(error));

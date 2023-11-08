@@ -18,9 +18,8 @@ const login = async (req, res, next) => {
     return res.status(400).json({ err: 'User not found' });
   }
 
-  const validatePassword = bcrypt.compareSync(password, user.password);
-
-  if (!validatePassword) {
+  if (!bcrypt.compareSync(password, user.password)) {
+    console.log(user.password)
     return res.status(400).json({ err: 'Invalid password' });
   }
 

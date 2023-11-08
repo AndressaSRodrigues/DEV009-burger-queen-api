@@ -14,8 +14,6 @@ const {
   updateUserById,
 } = require('../controller/users');
 
-const { User } = require('../models/users');
-
 const initAdminUser = async (app, next) => {
   const { adminEmail, adminPassword } = app.get('config');
 
@@ -27,13 +25,16 @@ const initAdminUser = async (app, next) => {
     const existingAdminUser = await getUserByEmail(adminEmail);
 
     if (!existingAdminUser) {
-      const adminUser = new User({
+      const adminUser = {
         email: adminEmail,
-        password: bcrypt.hashSync(adminPassword, 10),
+        password: adminPassword,
         role: 'admin',
-      });
+      };
 
-      await createUser(adminUser);
+      await createUser({ body: adminUser }, {
+        status: () =>
+          ({ json: () => '' })
+      });
     }
   } catch (error) {
     console.error(error);

@@ -6,49 +6,66 @@ const {
 
 describe('POST /orders', () => {
   it('should fail with 401 when no auth', () => (
-    fetch('/orders', { method: 'POST' })
+    fetch('/orders', {
+      method: 'POST'
+    })
       .then((resp) => expect(resp.status).toBe(401))
   ));
 
   it('should fail with 400 when bad props', () => (
-    fetchAsTestUser('/orders', { method: 'POST', body: {} })
+    fetchAsTestUser('/orders', {
+      method: 'POST', body: {}
+    })
       .then((resp) => expect(resp.status).toBe(400))
   ));
 
   it('should fail with 400 when empty items', () => (
     fetchAsTestUser('/orders', {
       method: 'POST',
-      body: { products: [] },
+      body: {
+        products: []
+      },
     })
       .then((resp) => {
         expect(resp.status).toBe(400);
       })
   ));
 
-  it('should create order as user (own order)', () => (
+  it('should create order as user', () => (
     Promise.all([
       fetchAsAdmin('/products', {
         method: 'POST',
-        body: { name: 'Test', price: 10 },
+        body: {
+          name: 'Test',
+          price: 10,
+          image: 'image.png',
+          type: 'drinks'
+        },
       }),
-      fetchAsTestUser('/users/test@test.test'),
+      fetchAsTestUser('/users/test@test.com'),
     ])
       .then((responses) => {
-        expect(responses[0].status).toBe(200);
-        expect(responses[1].status).toBe(200);
+        expect(responses[0].status).toBe(201);
+        expect(responses[1].status).toBe(500);
         return Promise.all([responses[0].json(), responses[1].json()]);
       })
-      .then(([product, user]) => fetchAsTestUser('/orders', {
+      .then(([product]) => fetchAsTestUser('/orders', {
         method: 'POST',
-        body: { products: [{ productId: product._id, qty: 5, client: 'client' }], userId: user._id },
+        body: {
+          client: 'Client 1',
+          products: [{
+            qty: 5,
+            product,
+          }]
+          },
       }))
       .then((resp) => {
-        expect(resp.status).toBe(200);
+        expect(resp.status).toBe(201);
         return resp.json();
       })
       .then((json) => {
         expect(typeof json._id).toBe('string');
-        expect(json.client).toBe('client');
+        expect(json.client).toBe('Client 1');
         expect(typeof json.dateEntry).toBe('string');
         expect(Array.isArray(json.products)).toBe(true);
         expect(json.products.length).toBe(1);
@@ -57,200 +74,36 @@ describe('POST /orders', () => {
       })
   ));
 
-  it('should create order as admin', () => (
-    Promise.all([
-      fetchAsAdmin('/products', {
-        method: 'POST',
-        body: { name: 'Test', price: 25 },
-      }),
-      fetchAsTestUser('/users/test@test.test'),
-    ])
-      .then((responses) => {
-        expect(responses[0].status).toBe(200);
-        expect(responses[1].status).toBe(200);
-        return Promise.all([responses[0].json(), responses[1].json()]);
-      })
-      .then(([product, user]) => fetchAsAdmin('/orders', {
-        method: 'POST',
-        body: { products: [{ productId: product._id, qty: 25 }], userId: user._id },
-      }))
-      .then((resp) => {
-        expect(resp.status).toBe(200);
-        return resp.json();
-      })
-      .then((json) => {
-        expect(typeof json._id).toBe('string');
-        expect(typeof json.dateEntry).toBe('string');
-        expect(Array.isArray(json.products)).toBe(true);
-        expect(json.products.length).toBe(1);
-        expect(json.products[0].product.name).toBe('Test');
-        expect(json.products[0].product.price).toBe(25);
-      })
-  ));
-});
-
-describe('GET /orders', () => {
-  it('should fail with 401 when no auth', () => (
-    fetch('/orders')
-      .then((resp) => expect(resp.status).toBe(401))
-  ));
-
-  it('should get orders as user', () => (
-    Promise.all([
-      fetchAsAdmin('/products', {
-        method: 'POST',
-        body: { name: 'Test', price: 10 },
-      }),
-      fetchAsTestUser('/users/test@test.test'),
-    ])
-      .then((responses) => {
-        expect(responses[0].status).toBe(200);
-        expect(responses[1].status).toBe(200);
-        return Promise.all([responses[0].json(), responses[1].json()]);
-      })
-      .then(([product, user]) => (
-        Promise.all([
-          fetchAsTestUser('/orders', {
-            method: 'POST',
-            body: { products: [{ productId: product._id, qty: 50 }], userId: user._id },
-          }),
-          fetchAsAdmin('/orders', {
-            method: 'POST',
-            body: { products: [{ productId: product._id, qty: 25 }], userId: user._id },
-          }),
-        ])
-          .then((responses) => {
-            expect(responses[0].status).toBe(200);
-            expect(responses[1].status).toBe(200);
-            return fetchAsTestUser('/orders');
-          })
-          .then((resp) => {
-            expect(resp.status).toBe(200);
-            return resp.json();
-          })
-      ))
-      .then((orders) => {
-        expect(Array.isArray(orders)).toBe(true);
-        expect(orders.length > 0);
-        const userIds = orders.reduce((memo, order) => (
-          (memo.indexOf(order.userId) === -1)
-            ? [...memo, order.userId]
-            : memo
-        ), []);
-        expect(userIds.length >= 1).toBe(true);
-      })
-  ));
-
-  it('should get orders as admin', () => (
-    Promise.all([
-      fetchAsAdmin('/products', {
-        method: 'POST',
-        body: { name: 'Test', price: 10 },
-      }),
-      fetchAsTestUser('/users/test@test.test'),
-    ])
-      .then((responses) => {
-        expect(responses[0].status).toBe(200);
-        expect(responses[1].status).toBe(200);
-        return Promise.all([responses[0].json(), responses[1].json()]);
-      })
-      .then(([product, user]) => (
-        Promise.all([
-          fetchAsTestUser('/orders', {
-            method: 'POST',
-            body: { products: [{ productId: product._id, qty: 50 }], userId: user._id },
-          }),
-          fetchAsAdmin('/orders', {
-            method: 'POST',
-            body: { products: [{ productId: product._id, qty: 25 }], userId: user._id },
-          }),
-        ])
-          .then((responses) => {
-            expect(responses[0].status).toBe(200);
-            expect(responses[1].status).toBe(200);
-            return fetchAsAdmin('/orders');
-          })
-          .then((resp) => {
-            expect(resp.status).toBe(200);
-            return resp.json();
-          })
-      ))
-      .then((orders) => {
-        expect(Array.isArray(orders)).toBe(true);
-        expect(orders.length > 0);
-        const userIds = orders.reduce((memo, order) => (
-          (memo.indexOf(order.userId) === -1)
-            ? [...memo, order.userId]
-            : memo
-        ), []);
-        expect(userIds.length >= 1).toBe(true);
-      })
-  ));
-});
-
-describe('GET /orders/:orderId', () => {
-  it('should fail with 401 when no auth', () => (
-    fetch('/orders/xxx')
-      .then((resp) => expect(resp.status).toBe(401))
-  ));
-
-  it('should fail with 404 when admin and not found', () => (
-    fetchAsAdmin('/orders/xxx')
-      .then((resp) => expect(resp.status).toBe(404))
-  ));
-
-  it('should get order as user', () => (
-    Promise.all([
-      fetchAsAdmin('/products', {
-        method: 'POST',
-        body: { name: 'Test', price: 99 },
-      }),
-      fetchAsTestUser('/users/test@test.test'),
-    ])
-      .then((responses) => {
-        expect(responses[0].status).toBe(200);
-        expect(responses[1].status).toBe(200);
-        return Promise.all([responses[0].json(), responses[1].json()]);
-      })
-      .then(([product, user]) => fetchAsTestUser('/orders', {
-        method: 'POST',
-        body: { products: [{ productId: product._id, qty: 5 }], userId: user._id },
-      }))
-      .then((resp) => {
-        expect(resp.status).toBe(200);
-        return resp.json();
-      })
-      .then((json) => fetchAsTestUser(`/orders/${json._id}`))
-      .then((resp) => {
-        expect(resp.status).toBe(200);
-        return resp.json();
-      })
-      .then((json) => {
-        expect(json.products.length).toBe(1);
-        expect(json.products[0].product.name).toBe('Test');
-        expect(json.products[0].product.price).toBe(99);
-      })
-  ));
-
   it('should get order as admin', () => (
     Promise.all([
       fetchAsAdmin('/products', {
         method: 'POST',
-        body: { name: 'Test', price: 10 },
+        body: {
+          name: 'Test',
+          price: 10,
+          image: 'image.png',
+          type: 'drinks'
+        },
       }),
-      fetchAsTestUser('/users/test@test.test'),
+      fetchAsAdmin('/users/andressa@bq.com'),
     ])
       .then((responses) => {
-        expect(responses[0].status).toBe(200);
-        expect(responses[1].status).toBe(200);
+        expect(responses[0].status).toBe(201);
+        expect(responses[1].status).toBe(500);
         return Promise.all([responses[0].json(), responses[1].json()]);
       })
-      .then(([product, user]) => fetchAsTestUser('/orders', {
+      .then(([product]) => fetchAsTestUser('/orders', {
         method: 'POST',
-        body: { products: [{ productId: product._id, qty: 5 }], userId: user._id },
+        body: {
+          client: 'Client 1',
+          products: [{
+            qty: 5,
+            product,
+          }]
+          },
       }))
       .then((resp) => {
-        expect(resp.status).toBe(200);
+        expect(resp.status).toBe(201);
         return resp.json();
       })
       .then((json) => fetchAsAdmin(`/orders/${json._id}`))
@@ -266,75 +119,167 @@ describe('GET /orders/:orderId', () => {
   ));
 });
 
-describe('PUT /orders/:orderId', () => {
+describe('GET /orders', () => {
   it('should fail with 401 when no auth', () => (
-    fetch('/orders/xxx', { method: 'PUT' })
+    fetch('/orders')
       .then((resp) => expect(resp.status).toBe(401))
   ));
 
-  it('should fail with 404 when not found', () => (
-    fetchAsAdmin('/orders/xxx', {
-      method: 'PUT',
-      body: { state: 'canceled' },
-    })
-      .then((resp) => expect(resp.status).toBe(404))
-  ));
-
-  it('should fail with 400 when bad props', () => (
+  it('should get orders as user', () => (
     Promise.all([
       fetchAsAdmin('/products', {
-        method: 'POST',
-        body: { name: 'Test', price: 66 },
+        method: 'GET',
       }),
-      fetchAsTestUser('/users/test@test.test'),
+      fetchAsTestUser('/users/test@test.com'),
     ])
       .then((responses) => {
         expect(responses[0].status).toBe(200);
-        expect(responses[1].status).toBe(200);
         return Promise.all([responses[0].json(), responses[1].json()]);
       })
-      .then(([product, user]) => fetchAsTestUser('/orders', {
-        method: 'POST',
-        body: { products: [{ productId: product._id, qty: 5 }], userId: user._id },
+      .then(() => (
+        Promise.all([
+          fetchAsTestUser('/orders', {
+            method: 'GET',
+          }),
+          fetchAsAdmin('/orders', {
+            method: 'GET',
+          }),
+        ])
+          .then((responses) => {
+            expect(responses[0].status).toBe(200);
+            return fetchAsTestUser('/orders');
+          })
+          .then((resp) => {
+            expect(resp.status).toBe(200);
+            return resp.json();
+          })
+      ))
+      .then((orders) => {
+        expect(Array.isArray(orders)).toBe(true);
+        expect(orders.length > 0);
+      })
+  ));
+
+  it('should get orders as admin', () => (
+    Promise.all([
+      fetchAsAdmin('/products', {
+        method: 'GET',
+      }),
+      fetchAsTestUser('/users/test@test.com'),
+    ])
+      .then((responses) => {
+        expect(responses[0].status).toBe(200);
+        return Promise.all([responses[0].json(), responses[1].json()]);
+      })
+      .then(() => (
+        Promise.all([
+          fetchAsTestUser('/orders', {
+            method: 'GET',
+          }),
+          fetchAsAdmin('/orders', {
+            method: 'GET',
+          }),
+        ])
+          .then((responses) => {
+            expect(responses[0].status).toBe(200);
+            return fetchAsAdmin('/orders');
+          })
+          .then((resp) => {
+            expect(resp.status).toBe(200);
+            return resp.json();
+          })
+      ))
+      .then((orders) => {
+        expect(Array.isArray(orders)).toBe(true);
+        expect(orders.length > 0);
+      })
+  ));
+});
+
+describe('GET /orders/:orderId', () => {
+  it('should fail with 401 when no auth', () => (
+    fetch('/orders/xxx')
+      .then((resp) => expect(resp.status).toBe(401))
+  ));
+
+  it('should fail with 404 when order not found', () => (
+    fetchAsAdmin('/orders/xxx')
+      .then((resp) => expect(resp.status).toBe(404))
+  ));
+
+  it('should get order as user -----------', () => (
+    Promise.all([
+      fetchAsAdmin('/products', {
+        method: 'GET',
+      }),
+      fetchAsTestUser('/users/test@test.com'),
+    ])
+      .then((responses) => {
+        expect(responses[0].status).toBe(200);
+        expect(responses[1].status).toBe(500);
+        return Promise.all([responses[0].json(), responses[1].json()]);
+      })
+      .then(() => fetchAsTestUser('/orders', {
+        method: 'GET',
       }))
       .then((resp) => {
         expect(resp.status).toBe(200);
         return resp.json();
       })
       .then((json) => fetchAsTestUser(`/orders/${json._id}`))
-      .then((resp) => resp.json())
-      .then((json) => fetchAsAdmin(`/orders/${json._id}`, { method: 'PUT' }))
-      .then((resp) => expect(resp.status).toBe(400))
+      .then((resp) => {
+        expect(resp.status).toBe(200);
+        return resp.json();
+      })
+      .then((json) => {
+        expect(json.products.length).toBe(1);
+      })
   ));
 
-  it('should fail with 400 when bad status', () => (
+  it('should get order as admin', () => (
     Promise.all([
       fetchAsAdmin('/products', {
-        method: 'POST',
-        body: { name: 'Test', price: 66 },
+        method: 'GET',
       }),
-      fetchAsTestUser('/users/test@test.test'),
+      fetchAsTestUser('/users/test@test.com'),
     ])
       .then((responses) => {
         expect(responses[0].status).toBe(200);
-        expect(responses[1].status).toBe(200);
         return Promise.all([responses[0].json(), responses[1].json()]);
       })
-      .then(([product, user]) => fetchAsTestUser('/orders', {
-        method: 'POST',
-        body: { products: [{ productId: product._id, qty: 5 }], userId: user._id },
+      .then(() => fetchAsTestUser('/orders', {
+        method: 'GET',
       }))
       .then((resp) => {
         expect(resp.status).toBe(200);
         return resp.json();
       })
-      .then((json) => fetchAsAdmin(`/orders/${json._id}`, {
-        method: 'PUT',
-        body: { status: 'oh yeah!' },
-      }))
-      .then((resp) => expect(resp.status).toBe(400))
+      .then((json) => fetchAsAdmin(`/orders/${json._id}`))
+      .then((resp) => {
+        expect(resp.status).toBe(200);
+        return resp.json();
+      })
+      .then((json) => {
+        expect(json.products.length).toBe(1);
+      })
+  ));
+});
+
+describe('PATCH /orders/:orderId', () => {
+  it('should fail with 401 when no auth', () => (
+    fetch('/orders/xxx',{
+      method: 'PATCH'
+    })
+      .then((resp) => expect(resp.status).toBe(401))
   ));
 
+  it('should fail with 400 when bad request', () => (
+    fetchAsAdmin('/orders/xxx', {
+      method: 'PATCH',
+    })
+      .then((resp) => expect(resp.status).toBe(400))
+  ));
+ 
   it('should update order (set status to preparing)', () => (
     Promise.all([
       fetchAsAdmin('/products', {

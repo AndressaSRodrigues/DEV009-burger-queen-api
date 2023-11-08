@@ -29,7 +29,7 @@ describe('POST /login', () => {
       method: 'POST',
       body: { email: `foo-${Date.now()}@bar.baz`, password: 'xxxx' },
     })
-      .then((resp) => expect(resp.status).toBe(404))
+      .then((resp) => expect(resp.status).toBe(400))
   ));
 
   it('should create new auth token and allow access using it', () => (
@@ -41,7 +41,7 @@ describe('POST /login', () => {
         expect(resp.status).toBe(200);
         return resp.json();
       })
-      .then(({ token }) => fetchWithAuth(token)(`/users/${config.adminEmail}`))
+      .then(({ accessToken }) => fetchWithAuth(accessToken)(`/users/${config.adminEmail}`))
       .then((resp) => {
         expect(resp.status).toBe(200);
         return resp.json();

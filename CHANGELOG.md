@@ -6,6 +6,32 @@
 
 During this sprint, I achieved the following goals:
 
+### Added
+
+In this sprint, the following new features and components were added:
+
+
+### Changed
+
+- 
+
+### Fixed
+
+- 
+
+### Removed
+
+- 
+
+### Commit Log
+
+
+## 1.0.0 - 2023-10-30
+
+### Sprint Learnings
+
+During this sprint, I achieved the following goals:
+
 - Became familiar with Express, MongoDB, and Mongoose.
 - Set up the basic project configuration.
 - Established a connection to the database.

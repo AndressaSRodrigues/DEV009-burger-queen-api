@@ -14,7 +14,6 @@ describe('User Controller', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
-
   describe('getUsers', () => {
     it('should return a list of users', async () => {
       const mockUsers = [{ name: 'User1' }, { name: 'User2' }];

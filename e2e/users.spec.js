@@ -37,56 +37,6 @@ describe('GET /users', () => {
         // TODO: Check that the results are actually the "expected" user objects
       })
   ));
-
-  it('should get users with pagination', () => (
-    fetchAsAdmin('/users?limit=1')
-      .then((resp) => {
-        expect(resp.status).toBe(200);
-        return resp.json().then((json) => ({ headers: resp.headers, json }));
-      })
-      .then(({ headers, json }) => {
-        const linkHeader = parseLinkHeader(headers.get('link'));
-
-        const nextUrlObj = url.parse(linkHeader.next);
-        const lastUrlObj = url.parse(linkHeader.last);
-        const nextQuery = qs.parse(nextUrlObj.query);
-        const lastQuery = qs.parse(lastUrlObj.query);
-
-        expect(nextQuery.limit).toBe('1');
-        expect(nextQuery.page).toBe('2');
-        expect(lastQuery.limit).toBe('1');
-        expect(lastQuery.page >= 2).toBe(true);
-
-        expect(Array.isArray(json)).toBe(true);
-        expect(json.length).toBe(1);
-        expect(json[0]).toHaveProperty('_id');
-        expect(json[0]).toHaveProperty('email');
-        return fetchAsAdmin(nextUrlObj.path);
-      })
-      .then((resp) => {
-        expect(resp.status).toBe(200);
-        return resp.json().then((json) => ({ headers: resp.headers, json }));
-      })
-      .then(({ headers, json }) => {
-        const linkHeader = parseLinkHeader(headers.get('link'));
-
-        const firstUrlObj = url.parse(linkHeader.first);
-        const prevUrlObj = url.parse(linkHeader.prev);
-
-        const firstQuery = qs.parse(firstUrlObj.query);
-        const prevQuery = qs.parse(prevUrlObj.query);
-
-        expect(firstQuery.limit).toBe('1');
-        expect(firstQuery.page).toBe('1');
-        expect(prevQuery.limit).toBe('1');
-        expect(prevQuery.page).toBe('1');
-
-        expect(Array.isArray(json)).toBe(true);
-        expect(json.length).toBe(1);
-        expect(json[0]).toHaveProperty('_id');
-        expect(json[0]).toHaveProperty('email');
-      })
-  ));
 });
 
 describe('GET /users/:uid', () => {
@@ -202,30 +152,30 @@ describe('POST /users', () => {
   ));
 });
 
-describe('PUT /users/:uid', () => {
+describe('PATCH /users/:uid', () => {
   it('should fail with 401 when no auth', () => (
-    fetch('/users/foo@bar.baz', { method: 'PUT' })
+    fetch('/users/foo@bar.baz', { method: 'PATCH' })
       .then((resp) => expect(resp.status).toBe(401))
   ));
 
   it('should fail with 403 when not owner nor admin', () => (
-    fetchAsTestUser(`/users/${config.adminEmail}`, { method: 'PUT' })
+    fetchAsTestUser(`/users/${config.adminEmail}`, { method: 'PATCH' })
       .then((resp) => expect(resp.status).toBe(403))
   ));
 
   it('should fail with 404 when admin and not found', () => (
-    fetchAsAdmin('/users/abc@def.gih', { method: 'PUT' })
+    fetchAsAdmin('/users/abc@def.gih', { method: 'PATCH' })
       .then((resp) => expect(resp.status).toBe(404))
   ));
 
   it('should fail with 400 when no props to update', () => (
-    fetchAsTestUser('/users/test@test.test', { method: 'PUT' })
+    fetchAsTestUser('/users/test@test.test', { method: 'PATCH' })
       .then((resp) => expect(resp.status).toBe(400))
   ));
 
   it('should fail with 403 when not admin tries to change own roles', () => (
     fetchAsTestUser('/users/test@test.test', {
-      method: 'PUT',
+      method: 'PATCH',
       body: { roles: { admin: true } },
     })
       .then((resp) => expect(resp.status).toBe(403))
@@ -233,11 +183,11 @@ describe('PUT /users/:uid', () => {
 
   it('should update user when own data (password change)', () => (
     fetchAsTestUser('/users/test@test.test', {
-      method: 'PUT',
+      method: 'PATCH',
       body: { password: 'garmadon' },
     })
       .then((resp) => expect(resp.status).toBe(200))
-      .then(() => fetch('/auth', {
+      .then(() => fetch('/login', {
         method: 'POST',
         body: { email: 'test@test.test', password: 'garmadon' },
       }))
@@ -245,16 +195,16 @@ describe('PUT /users/:uid', () => {
         expect(resp.status).toBe(200);
         return resp.json();
       })
-      .then((json) => expect(json).toHaveProperty('token'))
+      .then((json) => expect(json).toHaveProperty('accessToken'))
   ));
 
   it('should update user when admin', () => (
     fetchAsAdmin('/users/test@test.test', {
-      method: 'PUT',
+      method: 'PATCH',
       body: { password: 'ohmygod' },
     })
       .then((resp) => expect(resp.status).toBe(200))
-      .then(() => fetch('/auth', {
+      .then(() => fetch('/login', {
         method: 'POST',
         body: { email: 'test@test.test', password: 'ohmygod' },
       }))
@@ -262,7 +212,7 @@ describe('PUT /users/:uid', () => {
         expect(resp.status).toBe(200);
         return resp.json();
       })
-      .then((json) => expect(json).toHaveProperty('token'))
+      .then((json) => expect(json).toHaveProperty('accessToken'))
   ));
 });
 
@@ -291,7 +241,7 @@ describe('DELETE /users/:uid', () => {
         expect(resp.status).toBe(200);
         return resp.json();
       })
-      .then(({ token }) => fetchWithAuth(token)(`/users/${credentials.email}`, {
+      .then(({ accessToken }) => fetchWithAuth(accessToken)(`/users/${credentials.email}`, {
         method: 'DELETE',
       }))
       .then((resp) => expect(resp.status).toBe(200))

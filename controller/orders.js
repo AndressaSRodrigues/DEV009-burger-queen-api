@@ -10,7 +10,7 @@ const {
 const getOrders = async (req, res) => {
   try {
     const orders = await findOrders();
-    return res.json(orders);
+    return res.status(200).json(orders);
   } catch (error) {
     return res.status(500).json({ message: 'Orders not found' });
   }
@@ -20,9 +20,9 @@ const getOrderById = async (req, res) => {
   try {
     const { orderId } = req.params;
     const order = await findById(orderId);
-    return res.json(order);
+    return res.status(200).json(order);
   } catch (error) {
-    return res.status(500).json({ message: 'Could not find order.' });
+    return res.status(404).json({ message: 'Could not find order.' });
   }
 };
 
@@ -59,7 +59,7 @@ const updateOrderById = async (req, res) => {
 
     return res.status(200).json(updatedOrder);
   } catch (error) {
-    return res.status(500).json({ message: 'Order update failed.' });
+    return res.status(400).json({ message: 'Failed to update.' });
   }
 };
 

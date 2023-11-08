@@ -1,7 +1,6 @@
 const bcrypt = require('bcrypt');
 
 const {
-  User,
   find,
   findByEmail,
   findById,
@@ -34,11 +33,11 @@ const createUser = async (req, res) => {
     return res.status(400).json({ message: 'Missing required fields.' });
   }
 
-  const user = new User({
+  const user = {
     email,
     password: bcrypt.hashSync(password, 10),
     role,
-  });
+  };
 
   try {
     const newUser = await create(user);
