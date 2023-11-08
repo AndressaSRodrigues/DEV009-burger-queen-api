@@ -42,12 +42,6 @@ To use the Burger Queen API with Postman, follow these steps:
 1. **Obtain an Access Token**:
    - Start by sending a `POST` request to the `/login` endpoint to obtain an access token. Provide your credentials (username and password) in the request body. Upon a successful login, the API will respond with an access token.
 
-   You can use these credentials to log in:
-   - As waiter:
-    email: waiter@bq.com, password: 123456
-   - As chef:
-    email: chef@bq.com, password: 123456
-
 2. **Set Authorization Header**:
    - Copy the access token received in the previous step.
    - In Postman, create a new request and go to the "Headers" tab.
