@@ -90,16 +90,25 @@ const updateUser = async (req, res) => {
   }
 
   try {
+    let user;
     let updatedUser;
 
     if(uid.includes('@')){
+      user = await findByEmail(uid);
+
+      if(!user){
+        return res.status(404).json({ message: 'User not found.' });
+      }
+
       updatedUser = await updateByEmail(uid, values);
     } else {
-      updatedUser = await updateById(uid, values);
-    }
+      user = await findById(uid);
 
-    if(!updatedUser){
-      return res.status(404).json({ message: 'User not found'});
+      if(!user){
+        return res.status(404).json({ message: 'User not found.' });
+      }
+
+      updatedUser = await updateById(uid, values);
     }
 
     return res.status(200).json(updatedUser);
@@ -112,9 +121,22 @@ const deleteUser = async (req, res) => {
   const { uid } = req.params;
 
   try {
+    let user;
     if(uid.includes('@')){
+      user = await findByEmail(uid);
+
+      if(!user){
+        return res.status(404).json({ message: 'User not found.' });
+      }
+
       await deleteByEmail(uid);
     } else {
+      user = await findById(uid);
+
+      if(!user){
+        return res.status(404).json({ message: 'User not found.' });
+      }
+
       await deleteById(uid);
     }
     return res.status(200).json({ message: 'User deleted.' });

@@ -50,9 +50,9 @@ module.exports = (app, next) => {
 
   app.post('/users', requireAdmin, createUser);
 
-  app.patch('/users/:uid', requireAuth, updateUser);
+  app.patch('/users/:uid', requireAdmin, updateUser);
 
-  app.delete('/users/:uid', requireAuth, deleteUser);
+  app.delete('/users/:uid', requireAdmin, deleteUser);
 
   initAdminUser(app, next);
 };
