@@ -17,7 +17,7 @@ async function findByEmail(email) {
 }
 
 async function findById(id) {
-  return User.findById(id);
+  return User.findById({ _id: id });
 }
 
 async function create(user) {

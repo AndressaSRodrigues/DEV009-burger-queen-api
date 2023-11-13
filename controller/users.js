@@ -95,20 +95,14 @@ const updateUser = async (req, res) => {
 
     if(uid.includes('@')){
       user = await findByEmail(uid);
-
-      if(!user){
-        return res.status(404).json({ message: 'User not found.' });
-      }
-
       updatedUser = await updateByEmail(uid, values);
     } else {
       user = await findById(uid);
-
-      if(!user){
-        return res.status(404).json({ message: 'User not found.' });
-      }
-
       updatedUser = await updateById(uid, values);
+    }
+
+    if(!user){
+      return res.status(404).json({ message: 'User not found.' });
     }
 
     return res.status(200).json(updatedUser);

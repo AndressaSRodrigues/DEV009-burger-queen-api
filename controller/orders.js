@@ -20,13 +20,17 @@ const getOrderById = async (req, res) => {
   try {
     const { orderId } = req.params;
     const order = await findById(orderId);
+    if(!order){
+      return res.status(404).json({ message: 'Order not found.' });
+    }
     return res.status(200).json(order);
   } catch (error) {
-    return res.status(404).json({ message: 'Could not find order.' });
+    return res.status(500).json({ message: 'Failed to fetch order.' });
   }
 };
 
 const createOrder = async (req, res) => {
+  const userId = req.user.id;
   const { client, products } = req.body;
 
   if (!client || !products) {
@@ -34,6 +38,7 @@ const createOrder = async (req, res) => {
   }
 
   const order = new Order({
+    userId,
     client,
     products,
   });
@@ -47,26 +52,41 @@ const createOrder = async (req, res) => {
 };
 
 const updateOrderById = async (req, res) => {
+  const { orderId } = req.params;
+  const values = req.body;
+
+  const order = await findById(orderId);
+
+  if (!order) {
+    return res.status(404).json({ message: 'Order not found.' });
+  }
+
+  if (!values.status) {
+    return res.status(400).json({ message: 'Status is required.' });
+  }
+
+  if (values.status === 'ready') {
+    values.dateProcessed = new Date();
+  }
+
   try {
-    const { orderId } = req.params;
-    const values = req.body;
-
     const updatedOrder = await updateById(orderId, values);
-
-    if (!updatedOrder) {
-      return res.status(404).json({ message: 'Order not found.' });
-    }
-
     return res.status(200).json(updatedOrder);
   } catch (error) {
-    return res.status(400).json({ message: 'Failed to update.' });
+    return res.status(500).json({ message: 'Failed to update.' });
   }
 };
 
 const deleteOrderById = async (req, res) => {
   try {
     const { orderId } = req.params;
-    await deleteById(orderId);
+
+    const deletedOrder = await deleteById(orderId);
+
+    if (!deletedOrder) {
+      return res.status(404).json({ message: 'Order not found.' });
+    }
+
     return res.status(200).json({ message: 'Order deleted.' });
   } catch (error) {
     return res.status(500).json({ message: 'Order delete failed.' });
