@@ -28,8 +28,16 @@ async function deleteById(id) {
   return User.findOneAndDelete({ _id: id });
 }
 
+async function deleteByEmail(email){
+  return User.findOneAndDelete({ email: email})
+}
+
 async function updateById(id, values) {
   return User.findByIdAndUpdate(id, values, { new: true });
+}
+
+async function updateByEmail(email, values) {
+  return User.findOneAndUpdate( { email: email }, values, { new: true });
 }
 
 module.exports = {
@@ -40,5 +48,7 @@ module.exports = {
   findById,
   create,
   deleteById,
+  deleteByEmail,
   updateById,
+  updateByEmail,
 };

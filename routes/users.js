@@ -9,9 +9,9 @@ const {
   getUsers,
   getUserByEmail,
   createUser,
-  getUserById,
-  deleteUserById,
-  updateUserById,
+  getOneUser,
+  deleteUser,
+  updateUser,
 } = require('../controller/users');
 
 const initAdminUser = async (app, next) => {
@@ -46,13 +46,13 @@ const initAdminUser = async (app, next) => {
 module.exports = (app, next) => {
   app.get('/users', requireAdmin, getUsers);
 
-  app.get('/users/:uid', requireAuth, getUserById);
+  app.get('/users/:uid', requireAuth, getOneUser);
 
   app.post('/users', requireAdmin, createUser);
 
-  app.patch('/users/:uid', requireAuth, updateUserById);
+  app.patch('/users/:uid', requireAuth, updateUser);
 
-  app.delete('/users/:uid', requireAuth, deleteUserById);
+  app.delete('/users/:uid', requireAuth, deleteUser);
 
   initAdminUser(app, next);
 };

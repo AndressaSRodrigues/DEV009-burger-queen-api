@@ -7,12 +7,14 @@ const {
   create,
   deleteById,
   updateById,
+  updateByEmail,
+  deleteByEmail,
 } = require('../models/users');
 
 const getUsers = async (req, res) => {
   try {
     const users = await find();
-    return res.json(users);
+    return res.status(200).json(users);
   } catch (error) {
     return res.status(500).json({ message: 'Users not found.' });
   }
@@ -22,7 +24,7 @@ const getUserByEmail = async (email, res) => {
   try {
     return await findByEmail(email);
   } catch (error) {
-    return res.status(500).json({ message: 'User not found.' });
+    return res.status(404).json({ message: 'User not found.' });
   }
 };
 
@@ -33,13 +35,19 @@ const createUser = async (req, res) => {
     return res.status(400).json({ message: 'Missing required fields.' });
   }
 
-  const user = {
-    email,
-    password: bcrypt.hashSync(password, 10),
-    role,
-  };
-
   try {
+    const existingUser = await findByEmail(email);
+
+    if (existingUser) {
+      return res.status(409).json({ message: 'Email is already registered.' });
+    }
+
+    const user = {
+      email,
+      password: bcrypt.hashSync(password, 10),
+      role,
+    };
+
     const newUser = await create(user);
     return res.status(201).json(newUser);
   } catch (error) {
@@ -47,29 +55,51 @@ const createUser = async (req, res) => {
   }
 };
 
-const getUserById = async (req, res) => {
+const getOneUser = async (req, res) => {
+  const { uid } = req.params;
+
   try {
-    const { uid } = req.params;
-    const user = await findById(uid);
-    return res.json(user);
+    let user;
+
+    if (uid.includes('@')){
+      user = await findByEmail(uid);
+    } else {
+      user = await findById(uid);
+    }
+
+    if(!user){
+      return res.status(404).json({ message: 'User not found'});
+    }
+
+    return res.status(200).json(user);
   } catch (error) {
-    return res.status(500).json({ message: 'User not found.' });
+    return res.status(500).json({ message: 'Failed to fetch user.' });
   }
 };
 
-const updateUserById = async (req, res) => {
-  try {
-    const { uid } = req.params;
-    const values = req.body;
+const updateUser = async (req, res) => {
+  const { uid } = req.params;
+  const values = req.body;
 
-    if (values.password) {
-      values.password = bcrypt.hashSync(values.password, 10);
+  if(!values.email && !values.password && !values.role){
+    return res.status(400).json({ message: 'No fields to update.' });
+  }
+
+  if (values.password) {
+    values.password = bcrypt.hashSync(values.password, 10);
+  }
+
+  try {
+    let updatedUser;
+
+    if(uid.includes('@')){
+      updatedUser = await updateByEmail(uid, values);
+    } else {
+      updatedUser = await updateById(uid, values);
     }
 
-    const updatedUser = await updateById(uid, values);
-
-    if (!updatedUser) {
-      return res.status(404).json({ message: 'User not found.' });
+    if(!updatedUser){
+      return res.status(404).json({ message: 'User not found'});
     }
 
     return res.status(200).json(updatedUser);
@@ -78,10 +108,15 @@ const updateUserById = async (req, res) => {
   }
 };
 
-const deleteUserById = async (req, res) => {
+const deleteUser = async (req, res) => {
+  const { uid } = req.params;
+
   try {
-    const { uid } = req.params;
-    await deleteById(uid);
+    if(uid.includes('@')){
+      await deleteByEmail(uid);
+    } else {
+      await deleteById(uid);
+    }
     return res.status(200).json({ message: 'User deleted.' });
   } catch (error) {
     return res.status(500).json({ message: 'Failed to delete user.' });
@@ -92,7 +127,7 @@ module.exports = {
   getUsers,
   getUserByEmail,
   createUser,
-  getUserById,
-  updateUserById,
-  deleteUserById,
+  getOneUser,
+  updateUser,
+  deleteUser,
 };

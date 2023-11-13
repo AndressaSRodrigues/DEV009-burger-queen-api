@@ -85,7 +85,7 @@ describe('POST /orders', () => {
           type: 'drinks'
         },
       }),
-      fetchAsAdmin('/users/andressa@bq.com'),
+      fetchAsAdmin(`/users/${config.adminEmail}`),
     ])
       .then((responses) => {
         expect(responses[0].status).toBe(201);
