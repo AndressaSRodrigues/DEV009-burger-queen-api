@@ -23,16 +23,23 @@ describe('POST /products', () => {
   it('should create product as admin', () => (
     fetchAsAdmin('/products', {
       method: 'POST',
-      body: { name: 'Test', price: 5 },
+      body: {
+        name: 'Test',
+        price: 5,
+        image: 'image.png',
+        type: 'drinks'
+    },
     })
       .then((resp) => {
-        expect(resp.status).toBe(200);
+        expect(resp.status).toBe(201);
         return resp.json();
       })
       .then((json) => {
         expect(typeof json._id).toBe('string');
         expect(typeof json.name).toBe('string');
         expect(typeof json.price).toBe('number');
+        expect(typeof json.image).toBe('string');
+        expect(typeof json.type).toBe('string');
       })
   ));
 });
@@ -50,6 +57,8 @@ describe('GET /products', () => {
           expect(typeof product._id).toBe('string');
           expect(typeof product.name).toBe('string');
           expect(typeof product.price).toBe('number');
+          expect(typeof product.image).toBe('string');
+          expect(typeof product.type).toBe('string');
         });
       })
   ));
@@ -57,7 +66,7 @@ describe('GET /products', () => {
 
 describe('GET /products/:productid', () => {
   it('should fail with 404 when not found', () => (
-    fetchAsTestUser('/products/notarealproduct')
+    fetchAsTestUser('/products/65419818a59437ee9d0fc81e')
       .then((resp) => expect(resp.status).toBe(404))
   ));
 
@@ -88,31 +97,36 @@ describe('GET /products/:productid', () => {
   ));
 });
 
-describe('PUT /products/:productid', () => {
+describe('PATCH /products/:productid', () => {
   it('should fail with 401 when no auth', () => (
-    fetch('/products/xxx', { method: 'PUT' })
+    fetch('/products/65419818a59437ee9d0fc81f', { method: 'PATCH' })
       .then((resp) => expect(resp.status).toBe(401))
   ));
 
   it('should fail with 403 when not admin', () => (
     fetchAsAdmin('/products', {
       method: 'POST',
-      body: { name: 'Test', price: 10 },
+      body: {
+        name: 'Test',
+        price: 10,
+        image: 'image.png',
+        type: 'drinks'
+      },
     })
       .then((resp) => {
-        expect(resp.status).toBe(200);
+        expect(resp.status).toBe(201);
         return resp.json();
       })
       .then((json) => fetchAsTestUser(`/products/${json._id}`, {
-        method: 'PUT',
+        method: 'PATCH',
         body: { price: 20 },
       }))
       .then((resp) => expect(resp.status).toBe(403))
   ));
 
   it('should fail with 404 when admin and not found', () => (
-    fetchAsAdmin('/products/12345678901234567890', {
-      method: 'PUT',
+    fetchAsAdmin('/products/65419818a59437ee9d0fc81e', {
+      method: 'PATCH',
       body: { price: 1 },
     })
       .then((resp) => expect(resp.status).toBe(404))
@@ -121,15 +135,22 @@ describe('PUT /products/:productid', () => {
   it('should fail with 400 when bad props', () => (
     fetchAsAdmin('/products', {
       method: 'POST',
-      body: { name: 'Test', price: 10 },
+      body: {
+        name: 'Test',
+        price: 10,
+        image: 'image.png',
+        type: 'drinks'
+      },
     })
       .then((resp) => {
-        expect(resp.status).toBe(200);
+        expect(resp.status).toBe(201);
         return resp.json();
       })
       .then((json) => fetchAsAdmin(`/products/${json._id}`, {
-        method: 'PUT',
-        body: { price: 'abc' },
+        method: 'PATCH',
+        body: {
+          title: 'Test'
+        }
       }))
       .then((resp) => expect(resp.status).toBe(400))
   ));
@@ -137,14 +158,19 @@ describe('PUT /products/:productid', () => {
   it('should update product as admin', () => (
     fetchAsAdmin('/products', {
       method: 'POST',
-      body: { name: 'Test', price: 10 },
+      body: {
+        name: 'Test',
+        price: 10,
+        image: 'image.png',
+        type: 'drinks'
+      },
     })
       .then((resp) => {
-        expect(resp.status).toBe(200);
+        expect(resp.status).toBe(201);
         return resp.json();
       })
       .then((json) => fetchAsAdmin(`/products/${json._id}`, {
-        method: 'PUT',
+        method: 'PATCH',
         body: { price: 20 },
       }))
       .then((resp) => {
@@ -164,10 +190,15 @@ describe('DELETE /products/:productid', () => {
   it('should fail with 403 when not admin', () => (
     fetchAsAdmin('/products', {
       method: 'POST',
-      body: { name: 'Test', price: 10 },
+      body: {
+        name: 'Test',
+        price: 10,
+        image: 'image.png',
+        type: 'drinks'
+      },
     })
       .then((resp) => {
-        expect(resp.status).toBe(200);
+        expect(resp.status).toBe(201);
         return resp.json();
       })
       .then((json) => fetchAsTestUser(`/products/${json._id}`, { method: 'DELETE' }))
@@ -175,17 +206,22 @@ describe('DELETE /products/:productid', () => {
   ));
 
   it('should fail with 404 when admin and not found', () => (
-    fetchAsAdmin('/products/12345678901234567890', { method: 'DELETE' })
+    fetchAsAdmin('/products/65419818a59437ee9d0fc81e', { method: 'DELETE' })
       .then((resp) => expect(resp.status).toBe(404))
   ));
 
   it('should delete other product as admin', () => (
     fetchAsAdmin('/products', {
       method: 'POST',
-      body: { name: 'Test', price: 10 },
+      body: {
+        name: 'Test',
+        price: 10,
+        image: 'image.png',
+        type: 'drinks'
+      },
     })
       .then((resp) => {
-        expect(resp.status).toBe(200);
+        expect(resp.status).toBe(201);
         return resp.json();
       })
       .then(

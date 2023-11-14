@@ -20,9 +20,12 @@ const getProductById = async (req, res) => {
   try {
     const { productId } = req.params;
     const product = await findById(productId);
-    return res.json(product);
+    if(!product){
+      return res.status(404).json({ message: 'Could not find product.' });
+    }
+    return res.status(200).json(product);
   } catch (error) {
-    return res.status(500).json({ message: 'Could not find product.' });
+    return res.status(500).json({ message: 'Failed to fetch product.' });
   }
 };
 
@@ -55,6 +58,10 @@ const updateProductById = async (req, res) => {
     const { productId } = req.params;
     const values = req.body;
 
+    if(!values.name && !values.price && !values.image && !values.type){
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+
     const updatedProduct = await updateById(productId, values);
 
     if (!updatedProduct) {
@@ -70,7 +77,12 @@ const updateProductById = async (req, res) => {
 const deleteProductById = async (req, res) => {
   try {
     const { productId } = req.params;
-    await deleteById(productId);
+    
+    const deleteProduct = await deleteById(productId);
+
+    if (!deleteProduct) {
+      return res.status(404).json({ message: 'Product not found.' });
+    }
     return res.status(200).json({ message: 'Product deleted.' });
   } catch (error) {
     return res.status(500).json({ message: 'Product delete failed.' });
